@@ -1,0 +1,3 @@
+[submodule "smart_move_analysis"]
+	path = smart_move_analysis
+	url = git@github.com:SmartMove-22/smart_move_analysis.git
