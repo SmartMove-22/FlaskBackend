@@ -61,7 +61,7 @@ def exercise_analysis():
     else:
         return {"error_msg": f"The system is not trained for exercise {exercise_category}."}, 400
 
-    landmark_first, landmark_middle, landmark_last = get_landmarks_from_angle(most_divergent_angle_idx)
+    landmark_first, landmark_middle, landmark_last = get_landmarks_from_angle(most_divergent_angle_idx, angles_to_use)
 
     finished_repetition = False
     if progress > 0.85:
