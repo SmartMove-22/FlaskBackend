@@ -5,6 +5,8 @@ from smart_move_analysis.knn import KNNRegressor
 
 
 
+REPETITION_THRESHOLD = .85
+
 reference_store = ReferenceStore('smart_move_analysis/data')
 
 knn_models = {}
@@ -29,7 +31,6 @@ def hello():
 
 @app.post('/exercise/analysis')
 def exercise_analysis():
-    time = int(request.json.get('time'))
     first_half = bool(request.json.get('first_half'))
     exercise_category = request.json.get('exercise_category') \
             .lower()
@@ -64,7 +65,7 @@ def exercise_analysis():
     landmark_first, landmark_middle, landmark_last = get_landmarks_from_angle(most_divergent_angle_idx, exercise_category)
 
     finished_repetition = False
-    if progress > 0.85:
+    if progress > REPETITION_THRESHOLD:
         first_half = not first_half
         if first_half:
             finished_repetition = True
