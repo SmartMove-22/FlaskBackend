@@ -1,7 +1,7 @@
 from flask import Flask, request
 from smart_move_analysis.utils import get_landmarks_from_angle, landmark_list_angles, EXERCISE_ANGLES, obtain_angles
 from smart_move_analysis.reference_store import LandmarkData, ReferenceStore
-from smart_move_analysis.knn import KNNRegressor
+from smart_move_analysis.analyzer import Analyzer
 
 
 
@@ -11,7 +11,7 @@ reference_store = ReferenceStore('smart_move_analysis/data')
 
 knn_models = {}
 for exercise in reference_store.exercises():
-    knn_models.update({exercise_half:KNNRegressor.from_exercise_references(
+    knn_models.update({exercise_half:Analyzer.from_exercise_references(
             exercise_references=reference_store.get(*exercise_half),
             exercise_angles=exercise if exercise in EXERCISE_ANGLES else None)
         for exercise_half in [
@@ -52,12 +52,15 @@ def exercise_analysis():
     angles_to_use = obtain_angles(exercise_category if exercise_category in EXERCISE_ANGLES else None)
     
     if knn_model:
+        print(landmarks_coordinates)
+        print(angles_to_use)
         landmark_angles = landmark_list_angles(
                 [LandmarkData(visibility=None, **coordinates) for coordinates in landmarks_coordinates],
                 angles=angles_to_use,
                 d2=True
             )
-        correctness, most_divergent_angle_value, most_divergent_angle_idx = knn_model.correctness(landmark_angles)
+        correctness, most_divergent_angle_idx, most_divergent_angle_ideal = knn_model.correctness(landmark_angles)
+        most_divergent_angle_value = landmark_angles[most_divergent_angle_idx]
         progress = knn_model.progress(landmark_angles)
     else:
         return {"error_msg": f"The system is not trained for exercise {exercise_category}."}, 400
@@ -80,7 +83,8 @@ def exercise_analysis():
         most_divergent_angle_landmark_first=landmark_first,
         most_divergent_angle_landmark_middle=landmark_middle,
         most_divergent_angle_landmark_last=landmark_last,
-        most_divergent_angle_value=most_divergent_angle_value)
+        most_divergent_angle_value=most_divergent_angle_value,
+        most_divergent_angle_ideal=most_divergent_angle_ideal)
 
     return response, 200
 
